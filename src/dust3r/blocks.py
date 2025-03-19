@@ -11,6 +11,7 @@ from itertools import repeat
 import collections.abc
 from torch.nn.functional import scaled_dot_product_attention
 from functools import partial
+import pdb
 
 
 def _ntuple(n):
@@ -97,7 +98,8 @@ class Attention(nn.Module):
         self.attn_drop = nn.Dropout(attn_drop)
         self.proj = nn.Linear(dim, dim)
         self.proj_drop = nn.Dropout(proj_drop)
-        self.rope = rope.float() if rope is not None else None
+        self.rope = rope if rope is not None else None
+        #self.rope = rope.float() if rope is not None else None
 
     def forward(self, x, xpos):
         B, N, C = x.shape
@@ -112,11 +114,12 @@ class Attention(nn.Module):
         q_type = q.dtype
         k_type = k.dtype
         if self.rope is not None:
-            q = q.float()
-            k = k.float()
-            with torch.autocast(device_type="cuda", enabled=False):
-                q = self.rope(q, xpos)
-                k = self.rope(k, xpos)
+            #q = q.float()
+            #k = k.float()
+            #with torch.autocast(device_type="cuda", enabled=False):
+            #pdb.set_trace()
+            q = self.rope(q, xpos)
+            k = self.rope(k, xpos)
             q = q.to(q_type)
             k = k.to(k_type)
 
@@ -191,8 +194,8 @@ class CrossAttention(nn.Module):
         self.attn_drop = nn.Dropout(attn_drop)
         self.proj = nn.Linear(dim, dim)
         self.proj_drop = nn.Dropout(proj_drop)
-
-        self.rope = rope.float() if rope is not None else None
+        self.rope = rope if rope is not None else None
+        #self.rope = rope.float() if rope is not None else None
 
     def forward(self, query, key, value, qpos, kpos):
         B, Nq, C = query.shape
@@ -218,16 +221,18 @@ class CrossAttention(nn.Module):
         q_type = q.dtype
         k_type = k.dtype
         if self.rope is not None:
+            #pdb.set_trace()
             if qpos is not None:
-                q = q.float()
-                with torch.autocast(device_type="cuda", enabled=False):
-                    q = self.rope(q, qpos)
+                #q = q.float()
+                #with torch.autocast(device_type="cuda", enabled=False):
+                q = self.rope(q, qpos)
                 q = q.to(q_type)
 
             if kpos is not None:
-                k = k.float()
-                with torch.autocast(device_type="cuda", enabled=False):
-                    k = self.rope(k, kpos)
+                #k = k.float()
+                #with torch.autocast(device_type="cpu", enabled=True):
+                #pdb.set_trace()
+                k = self.rope(k, kpos)
                 k = k.to(k_type)
 
         x = (

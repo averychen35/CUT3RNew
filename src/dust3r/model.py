@@ -1,5 +1,6 @@
 import sys
 import os
+import pdb
 
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 from collections import OrderedDict
@@ -687,6 +688,7 @@ class ARCroco3DStereo(CroCoNet):
                     use_reentrant=not self.fixed_input_length,
                 )
             else:
+                #pdb.set_trace()
                 f_state, _ = blk_state(*final_output[-1][::+1], pos_state, pos_img)
                 f_img, _ = blk_img(*final_output[-1][::-1], pos_img, pos_state)
             final_output.append((f_state, f_img))
